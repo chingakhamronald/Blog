@@ -1,22 +1,34 @@
-import { Typography } from "@mui/material";
+import {
+  Avatar,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemButton,
+  ListItemText,
+  Typography,
+} from "@mui/material";
 import { Box } from "@mui/system";
-import React, { useEffect, useState } from "react";
-
-const data = ["Eat", "Sleep", "Code"];
+import axios from "axios";
+import React, { useCallback, useEffect, useState } from "react";
 
 const App = () => {
-  const [title, setTitle] = useState("");
+  const [data, setData] = useState([]);
+
+  const apiData = useCallback(() => {
+    axios
+      .get("https://jsonplaceholder.typicode.com/photos")
+      .then((res) => {
+        setData(res?.data);
+      })
+      .catch((err) => err);
+  }, [setData]);
 
   useEffect(() => {
-    const timeout = setInterval(() => {
-      const idx = Math.floor(Math.random() * data.length);
-      setTitle(data[idx]);
+    const clearTime = setTimeout(() => {
+      apiData();
     }, 1000);
-
-    return () => {
-      clearInterval(timeout);
-    };
-  }, [title]);
+    return () => clearTimeout(clearTime);
+  }, []);
 
   return (
     <Box
@@ -25,9 +37,20 @@ const App = () => {
       alignItems={"center"}
       height={"100%"}
     >
-      <Typography variant="h3" color={"InfoText"}>
-        I Like to {title}!
-      </Typography>
+      <List>
+        {data.map((e, idx) => {
+          return (
+            <ListItemButton>
+              <ListItemAvatar>
+                <Avatar src={`${e?.thumbnailUrl}`} />
+              </ListItemAvatar>
+              <ListItem key={idx}>
+                <ListItemText primary={e?.title} />
+              </ListItem>
+            </ListItemButton>
+          );
+        })}
+      </List>
     </Box>
   );
 };
